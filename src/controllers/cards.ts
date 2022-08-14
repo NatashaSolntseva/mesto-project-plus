@@ -34,9 +34,10 @@ export const createCard = (
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestError(err.message);
+        return next(new BadRequestError(err.message));
       }
-    }).catch(next);
+      return next(err);
+    });
 };
 
 export const deleteCard = (
@@ -61,10 +62,10 @@ export const deleteCard = (
     .then((card) => res.send({ data: card }))
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError(CAST_ERROR_TEXT);
+        return next(new BadRequestError(CAST_ERROR_TEXT));
       }
-    })
-    .catch(next);
+      return next(err);
+    });
 };
 
 export const putLike = (
@@ -88,10 +89,10 @@ export const putLike = (
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError(CAST_ERROR_TEXT);
+        return next(new BadRequestError(CAST_ERROR_TEXT));
       }
-    })
-    .catch(next);
+      return next(err);
+    });
 };
 
 export const deleteLike = (
@@ -115,8 +116,8 @@ export const deleteLike = (
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestError(CAST_ERROR_TEXT); // 400
+        return next(new BadRequestError(CAST_ERROR_TEXT)); // 400
       }
-    })
-    .catch(next);
+      return next(err);
+    });
 };

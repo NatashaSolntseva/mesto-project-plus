@@ -4,7 +4,8 @@ import { SessionRequest } from '../utils/types';
 import User from '../models/user';
 
 import NotFoundError from '../errors/not-found-error';
-import { NOT_FOUND_USER_ERROR_TEXT } from '../utils/const';
+import { CAST_ERROR_TEXT, NOT_FOUND_USER_ERROR_TEXT } from '../utils/const';
+import BadRequestError from '../errors/bad-request-error';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => {
   User.find({})
@@ -24,6 +25,11 @@ export const getUserById = (
       }
       res.send({ data: user });
     })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadRequestError(CAST_ERROR_TEXT);
+      }
+    })
     .catch(next);
 };
 
@@ -39,7 +45,11 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
         avatar: user.avatar,
       },
     }))
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError(err.message);
+      }
+    }).catch(next);
 };
 
 export const updateUser = (
@@ -61,7 +71,14 @@ export const updateUser = (
       }
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError(err.message);
+      }
+      if (err.name === 'CastError') {
+        throw new BadRequestError(CAST_ERROR_TEXT);
+      }
+    }).catch(next);
 };
 
 export const updateAvatar = (
@@ -78,6 +95,14 @@ export const updateAvatar = (
         throw new NotFoundError(NOT_FOUND_USER_ERROR_TEXT);
       }
       res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError(err.message);
+      }
+      if (err.name === 'CastError') {
+        throw new BadRequestError(CAST_ERROR_TEXT);
+      }
     })
     .catch(next);
 };

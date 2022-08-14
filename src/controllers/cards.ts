@@ -7,7 +7,8 @@ import Card from '../models/card';
 import NotFoundError from '../errors/not-found-error';
 
 import BadRequestError from '../errors/bad-request-error';
-import { NOT_FOUND_CARD_ERROR_TEXT } from '../utils/const';
+import { CAST_ERROR_TEXT, FORBIDDEN_ERROR_TEXT, NOT_FOUND_CARD_ERROR_TEXT } from '../utils/const';
+import ForbiddenError from '../errors/forbidden-error';
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => {
   Card.find({})
@@ -31,7 +32,11 @@ export const createCard = (
         data: card,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestError(err.message);
+      }
+    }).catch(next);
 };
 
 export const deleteCard = (
@@ -49,13 +54,16 @@ export const deleteCard = (
       }
 
       if (card.owner.toString() !== userId) {
-        throw new BadRequestError(
-          'Невозможно удалить данную карточку (ограничение прав)',
-        );
+        throw new ForbiddenError(FORBIDDEN_ERROR_TEXT);
       }
       return Card.findByIdAndRemove(cardId);
     })
     .then((card) => res.send({ data: card }))
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadRequestError(CAST_ERROR_TEXT);
+      }
+    })
     .catch(next);
 };
 
@@ -78,6 +86,11 @@ export const putLike = (
       }
       res.send({ data: card });
     })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadRequestError(CAST_ERROR_TEXT);
+      }
+    })
     .catch(next);
 };
 
@@ -99,6 +112,11 @@ export const deleteLike = (
         throw new NotFoundError(NOT_FOUND_CARD_ERROR_TEXT);
       }
       res.send({ data: card });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        throw new BadRequestError(CAST_ERROR_TEXT); // 400
+      }
     })
     .catch(next);
 };

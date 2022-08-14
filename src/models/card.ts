@@ -6,8 +6,8 @@ const cardSchema = new mongoose.Schema<ICard>({
   name: {
     type: String,
     required: true,
-    minlength: 2,
-    maxlength: 30,
+    minlength: [2, 'Поле должно содержать от 2 до 30 символов, пытались отправить: {VALUE}'],
+    maxlength: [30, 'Поле должно содержать от 2 до 30 символов, пытались отправить: {VALUE}'],
   },
   link: {
     type: String,
@@ -21,6 +21,8 @@ const cardSchema = new mongoose.Schema<ICard>({
   likes: {
     type: [mongoose.Schema.Types.ObjectId],
     default: [],
+    ref: 'user',
+
   },
   createdAt: {
     type: Date,

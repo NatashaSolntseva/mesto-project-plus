@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import {
-  createUser,
+  getCurrentUser,
   getUserById,
   getUsers,
   updateAvatar,
@@ -13,10 +13,10 @@ const router = Router();
 router.get('/', getUsers);
 
 // получить пользователя по id
-router.get('/:userId', getUserById);
+// router.get('/:userId', getUserById);
 
-// создать пользователя - тестовое решение
-router.post('/', createUser);
+// получить текущего пользователя
+router.get('/me', getCurrentUser); // TODO не работает конфликт с router.get('/:userId', getUserById);,
 
 // обновить пользователя (имя, о себе)
 router.patch('/me', updateUser);

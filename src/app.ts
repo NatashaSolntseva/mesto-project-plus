@@ -1,12 +1,19 @@
-import express, { Response, NextFunction } from 'express';
+import express from 'express';
+
 import mongoose from 'mongoose';
+
+import { celebrate, Joi, errors } from 'celebrate';
 
 import userRouters from './routes/users';
 import cardRouters from './routes/cards';
 
 import errorsHandler from './middlewares/errors-handler';
 
-import { SessionRequest } from './utils/types';
+import { createUser, login } from './controllers/users';
+
+import auth from './middlewares/auth';
+
+import { requestLogger, errorLogger } from './middlewares/logger';
 
 const { PORT = 3000 } = process.env;
 
@@ -17,16 +24,39 @@ app.use(express.urlencoded({ extended: true })); // для отправки гл
 // подключаемся к серверу MongoiDB
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-app.use((req: SessionRequest, res: Response, next: NextFunction) => {
-  req.user = {
-    _id: '62f0e44442bb93b50a203124',
-  };
-  next();
-});
+// поключить логгер запросов
 
+app.use(requestLogger);
+
+// роуты доступные всем пользователям
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(6),
+  }),
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(6),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/^((ftp|http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-/])*)?/).message('Url аватара указан некорректно'), //eslint-disable-line
+  }),
+}), createUser);
+
+// защита авторизацией
+app.use(auth);
+
+// зашищенные роуты
 app.use('/users', userRouters);
-
 app.use('/cards', cardRouters);
+
+// логгер ошибок celebrate
+app.use(errors());
+
+// логгер ошибок
+app.use(errorLogger);
 
 // централизованный обработчик ошибок
 app.use(errorsHandler);

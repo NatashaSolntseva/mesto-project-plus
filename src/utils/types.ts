@@ -1,8 +1,15 @@
 import { Request } from 'express';
+import jwt from 'jsonwebtoken';
 import mongoose, { Date } from 'mongoose';
 
 export interface SessionRequest extends Request {
-  user?: { _id: string };
+  user?: {
+    _id: string;
+  }
+}
+
+export interface ISessionRequest extends Request {
+  user?: string | jwt.JwtPayload;
 }
 
 export interface ICard {
@@ -11,12 +18,6 @@ export interface ICard {
   owner: mongoose.Schema.Types.ObjectId;
   likes: mongoose.Schema.Types.ObjectId[] | never[];
   createdAt: Date;
-}
-
-export interface IUser {
-  name: string;
-  about: string;
-  avatar: string;
 }
 
 export interface IError extends Error {

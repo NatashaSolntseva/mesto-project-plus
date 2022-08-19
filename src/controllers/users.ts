@@ -1,11 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+
 import { SessionRequest } from '../utils/types';
 import User from '../models/user';
 
 import NotFoundError from '../errors/not-found-error';
-import { CAST_ERROR_TEXT, NOT_FOUND_USER_ERROR_TEXT } from '../utils/const';
+import { CAST_ERROR_TEXT, CONFLICT_ERROR_TEXT, NOT_FOUND_USER_ERROR_TEXT } from '../utils/const';
 import BadRequestError from '../errors/bad-request-error';
+import ConflictError from '../errors/conflict-error';
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => {
   User.find({})
@@ -34,20 +38,30 @@ export const getUserById = (
 };
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    }))
     .then((user) => res.send({
       data: {
         _id: user._id,
         name: user.name,
         about: user.about,
         avatar: user.avatar,
+        email: user.email,
+        password: user.password,
       },
     }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+     /* if (err.name === 'ValidationError') {
         return next(new BadRequestError(err.message));
+      }*/
+      if (err.code === 11000) {
+        return next(new ConflictError(CONFLICT_ERROR_TEXT));
       }
       return next(err);
     });
@@ -107,4 +121,30 @@ export const updateAvatar = (
       }
       return next(err);
     });
+};
+
+export const login = (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      res.send({
+        token: jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' }),
+      });
+    })
+    .catch(next);
+};
+
+export const getCurrentUser = (
+  req: SessionRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const userId = req.user?._id;
+
+  User.findById(userId)
+    .then((user) => {
+      res.send({ data: user });
+    })
+    .catch(next);
 };

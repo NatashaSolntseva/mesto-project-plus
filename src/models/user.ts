@@ -22,8 +22,8 @@ export interface UserModel extends Model<IUser> {
 const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
-    minlength: [2, 'Поле должно содержать от 2 до 30 символов, пытались отправить: {VALUE}'],
-    maxlength: [30, 'Поле должно содержать от 2 до 30 символов, опытались отправить: {VALUE}'],
+    minlength: 2,
+    maxlength: 30,
     default: 'Жак-Ив Кусто',
   },
   about: {

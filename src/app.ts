@@ -14,6 +14,7 @@ import { createUser, login } from './controllers/users';
 import auth from './middlewares/auth';
 
 import { requestLogger, errorLogger } from './middlewares/logger';
+import { PictureUrlPattern } from './utils/const';
 
 const { PORT = 3000 } = process.env;
 
@@ -41,7 +42,7 @@ app.post('/signup', celebrate({
     password: Joi.string().required().min(6),
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(/^((ftp|http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-/])*)?/).message('Url аватара указан некорректно'), //eslint-disable-line
+    avatar: Joi.string().pattern(PictureUrlPattern).message('Url аватара указан некорректно'),
   }),
 }), createUser);
 

@@ -1,4 +1,6 @@
+import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
+import { PictureUrlPattern } from '../utils/const';
 
 import {
   getCurrentUser,
@@ -16,12 +18,36 @@ router.get('/', getUsers);
 // router.get('/:userId', getUserById);
 
 // получить текущего пользователя
-router.get('/me', getCurrentUser); // TODO не работает конфликт с router.get('/:userId', getUserById);,
+router.get('/me', celebrate({
+  headers: Joi.object().keys({
+    authorization: Joi.string().required(),
+  }).unknown(true),
+}), getCurrentUser);
 
 // обновить пользователя (имя, о себе)
-router.patch('/me', updateUser);
+router.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+  }),
+  headers: Joi.object().keys({
+    authorization: Joi.string().required(),
+  }).unknown(true),
+}), updateUser);
 
 // обновить аватар
-router.patch('/me/avatar', updateAvatar);
+router.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().pattern(PictureUrlPattern).message('Url аватара указан некорректно'),
+  }),
+  headers: Joi.object().keys({
+    authorization: Joi.string().required(),
+  }).unknown(true),
+}), updateAvatar);
+
+// По умолчанию Joi не допускает полей,
+// которые не перечислены в объекте валидации.
+//  Чтобы изменить это поведение,
+// нужно после вызова метода keys вызвать метод unknown с аргументом true
 
 export default router;

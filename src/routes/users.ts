@@ -14,9 +14,6 @@ const router = Router();
 // получить всех пользователей
 router.get('/', getUsers);
 
-// получить пользователя по id
-// router.get('/:userId', getUserById);
-
 // получить текущего пользователя
 router.get('/me', celebrate({
   headers: Joi.object().keys({
@@ -49,5 +46,8 @@ router.patch('/me/avatar', celebrate({
 // которые не перечислены в объекте валидации.
 //  Чтобы изменить это поведение,
 // нужно после вызова метода keys вызвать метод unknown с аргументом true
+
+// получить пользователя по id
+router.get('/:userId', getUserById);
 
 export default router;

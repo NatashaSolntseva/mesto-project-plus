@@ -53,11 +53,11 @@ app.use(auth);
 app.use('/users', userRouters);
 app.use('/cards', cardRouters);
 
-// логгер ошибок celebrate
-app.use(errors());
-
 // логгер ошибок
 app.use(errorLogger);
+
+// обработчик ошибок celebrate
+app.use(errors());
 
 // централизованный обработчик ошибок
 app.use(errorsHandler);

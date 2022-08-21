@@ -2,9 +2,10 @@ import mongoose, { Model, Document } from 'mongoose';
 
 import validator from 'validator';
 
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 
 import UnauthError from '../errors/unauth-error';
+import { PictureUrlPattern } from '../utils/const';
 
 interface IUser {
   name: string;
@@ -16,7 +17,7 @@ interface IUser {
 
 export interface UserModel extends Model<IUser> {
   // eslint-disable-next-line no-unused-vars
-  findUserByCredentials: (email: string, password: string) => Promise<Document<unknown, any, IUser>>
+  findUserByCredentials: (email: string, password: string) => Promise<Document<IUser>>
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -37,11 +38,7 @@ const userSchema = new mongoose.Schema<IUser>({
     required: true,
     validate: {
       validator(input: string) {
-        return validator.isURL(input, {
-          protocols: ['http', 'https'],
-          require_tld: true,
-          require_protocol: true,
-        });
+        return PictureUrlPattern.test(input);
       },
       message: 'Ссылка на аватар введена не верно',
     },

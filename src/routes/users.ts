@@ -1,6 +1,6 @@
 import { celebrate, Joi } from 'celebrate';
 import { Router } from 'express';
-import { PictureUrlPattern } from '../utils/const';
+import { IdStringPattern, PictureUrlPattern } from '../utils/const';
 
 import {
   getCurrentUser,
@@ -42,12 +42,20 @@ router.patch('/me/avatar', celebrate({
   }).unknown(true),
 }), updateAvatar);
 
+// получить пользователя по id
+router.get('/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().required().length(24).pattern(IdStringPattern)
+      .message('Id пользователя указан некорректно'),
+  }),
+  headers: Joi.object().keys({
+    authorization: Joi.string().required(),
+  }).unknown(true),
+}), getUserById);
+
+export default router;
+
 // По умолчанию Joi не допускает полей,
 // которые не перечислены в объекте валидации.
 //  Чтобы изменить это поведение,
 // нужно после вызова метода keys вызвать метод unknown с аргументом true
-
-// получить пользователя по id
-router.get('/:userId', getUserById);
-
-export default router;

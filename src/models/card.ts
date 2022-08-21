@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { PictureUrlPattern } from '../utils/const';
 
 import { ICard } from '../utils/types';
 
@@ -12,6 +13,12 @@ const cardSchema = new mongoose.Schema<ICard>({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator(input: string) {
+        return PictureUrlPattern.test(input);
+      },
+      message: 'Ссылка на карточку введена не верно',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

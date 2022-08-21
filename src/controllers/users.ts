@@ -57,9 +57,9 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
       },
     }))
     .catch((err) => {
-     /* if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         return next(new BadRequestError(err.message));
-      }*/
+      }
       if (err.code === 11000) {
         return next(new ConflictError(CONFLICT_ERROR_TEXT));
       }
